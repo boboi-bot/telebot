@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet Form</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-button-color: #248bcf;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0; padding: 20px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box; /* Quan trọng để không bị tràn màn hình */
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .hint { font-size: 12px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <h3>Kê khai Timesheet</h3>
+    
+    <div class="form-group">
+        <label for="dateInput">Ngày làm việc:</label>
+        <input type="date" id="dateInput">
+        <div class="hint" id="dateHint">Giới hạn: 25 tháng trước - 24 tháng này</div>
+    </div>
+
+    <div class="form-group">
+        <label for="workInput">Nội dung công việc:</label>
+        <input type="text" id="workInput" placeholder="VD: Code chức năng Login...">
+    </div>
+
+    <button id="submitBtn">Gửi Timesheet</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Mở rộng hết cỡ màn hình
+
+        // 1. Tính toán logic giới hạn ngày
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0-11
+
+        // Ngày 25 tháng trước
+        const minDate = new Date(currentYear, currentMonth - 1, 25);
+        // Ngày 24 tháng này
+        const maxDate = new Date(currentYear, currentMonth, 24);
+
+        // Định dạng yyyy-mm-dd để gán vào input date
+        const formatDate = (date) => {
+            return date.toISOString().split('T')[0];
+        };
+
+        const dateEl = document.getElementById('dateInput');
+        dateEl.min = formatDate(minDate);
+        dateEl.max = formatDate(maxDate);
+        dateEl.value = formatDate(now); // Mặc định chọn ngày hôm nay
+
+        // Hiển thị text hướng dẫn cụ thể
+        document.getElementById('dateHint').innerText = `Hợp lệ từ: ${minDate.toLocaleDateString('vi-VN')} đến ${maxDate.toLocaleDateString('vi-VN')}`;
+
+        // 2. Xử lý gửi dữ liệu
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const dateValue = dateEl.value;
+            const workValue = document.getElementById('workInput').value.trim();
+
+            if (!workValue) {
+                alert("Vui lòng nhập nội dung công việc!");
+                return;
+            }
+
+            const data = {
+                date: dateValue,
+                work: workValue
+            };
+
+            // Gửi dữ liệu về Telegram Bot (Chỉ hoạt động khi mở qua KeyboardButton)
+            tg.sendData(JSON.stringify(data));
+        });
+    </script>
+</body>
+</html>

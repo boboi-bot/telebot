@@ -96,6 +96,10 @@
                 alert("Vui lòng nhập nội dung công việc!");
                 return;
             }
+            if (workValue.length > 250) {
+                alert("Nội dung công việc quá dài!")
+                return;
+            }
 
             const data = {
                 type: "timesheet",
